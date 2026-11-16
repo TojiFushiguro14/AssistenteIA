@@ -1,0 +1,9 @@
+Casa Ondablu - demo online
+
+index.html      il sito
+api/chat.js     il piccolo server che fa rispondere l'assistente con Gemini
+img/            le foto
+
+La chiave di Gemini NON va in questi file: va solo su Vercel, come variabile d'ambiente GEMINI_API_KEY.
+Facoltativo: GEMINI_MODEL per scegliere il modello (altrimenti prova gemini-3.5-flash-lite, poi gemini-2.5-flash-lite, poi gemini-2.5-flash).
+Senza chiave il sito funziona lo stesso, in "modalita' base".

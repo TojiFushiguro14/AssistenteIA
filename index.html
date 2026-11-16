@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Assistente Casa Ondablu</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: sito di un piccolo B&B ligure — barra di navigazione, foto grande con barra date, camere, la casa, dove siamo, piè di pagina; chat flottante in basso a destra. */
+body{color-scheme:light}
+:root{color-scheme:light;
+  --bg:#ffffff; --paper:#ffffff; --ink:#1d1d1f; --mute:#6e6e73; --line:#e8e8ea; --soft:#f7f7f8;
+  --sea:#1d1d1f; --sea-ink:#ffffff; --ochre:#a8834a; --salmon:#a8834a;
+  --bubble-me:#1d1d1f; --bubble-me-ink:#ffffff; --bubble-bot:#f2f2f4; --warn-bg:#f7f7f8; --warn-ink:#6e6e73;
+  --display:"Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --body:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--body);margin:0}
+.gut{padding-left:max(20px, env(safe-area-inset-left, 0px));padding-right:max(20px, env(safe-area-inset-right, 0px))}
+.in{max-width:1120px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0;letter-spacing:.2px}
+a{color:inherit}
+.demo-note{background:var(--warn-bg);color:var(--warn-ink);border-bottom:1px solid var(--line);font-size:12.5px;padding-block:6px;text-align:center}
+/* nav */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--paper)}
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:25;background:color-mix(in srgb, var(--paper) 94%, transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.nav .in{display:flex;align-items:center;gap:22px;padding-block:12px}
+.logo{font-family:var(--display);font-size:26px;font-weight:600;line-height:1}
+.logo small{display:block;font:500 10.5px var(--body);letter-spacing:2.2px;text-transform:uppercase;color:var(--mute);margin-top:3px}
+.links{display:flex;gap:20px;font-size:14px;margin-left:auto}
+.links a{text-decoration:none;color:var(--ink);font-size:13px;letter-spacing:1.2px;text-transform:uppercase} .links a:hover{color:var(--ochre)}
+.lang{font-size:13px;color:var(--mute)} .lang b{color:var(--ink)}
+.btn{font:500 12.5px var(--body);letter-spacing:1.6px;text-transform:uppercase;border:0;border-radius:2px;padding:12px 22px;background:var(--sea);color:var(--sea-ink);cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ochre)}
+.btn.ghost:hover{background:var(--ochre);color:var(--paper)}
+@media (max-width:820px){.links,.lang{display:none}.nav .btn{margin-left:auto}}
+/* hero */
+.hero{position:relative;min-height:min(78vh,620px);display:flex;align-items:flex-end;color:#fff;overflow:hidden;background:#2b2d30}
+.hero .ph{position:absolute;inset:0}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,.08) 25%, rgba(10,12,14,.65)), linear-gradient(90deg, rgba(10,12,14,.5) 0%, rgba(10,12,14,.15) 55%, transparent 80%)}
+.hero .in{position:relative;z-index:1;width:100%;padding-block:40px 34px}
+.kicker{font-size:12.5px;letter-spacing:2.4px;text-transform:uppercase;opacity:.92}
+.hero h1{font-size:clamp(40px,7vw,78px);line-height:1.02;margin:8px 0 10px;font-weight:500}
+.hero p{max-width:540px;font-size:16.5px;margin:0 0 24px;opacity:.95}
+.ph{background-size:cover;background-position:center}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+/* booking bar */
+.book{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:0;background:var(--paper);color:var(--ink);border-radius:3px;overflow:hidden;box-shadow:0 14px 40px rgba(0,0,0,.25);max-width:820px}
+.book label{display:flex;flex-direction:column;padding:10px 16px;border-right:1px solid var(--line);font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--mute);min-width:0}
+.book input,.book select{border:0;background:transparent;font:500 15px var(--body);color:var(--ink);padding:3px 0 0;min-width:0;width:100%}
+.book .btn{border-radius:0;padding:0 26px;background:var(--ochre);color:#fff}
+@media (max-width:640px){.book{grid-template-columns:1fr 1fr}.book label:nth-child(2){border-right:0}.book label:nth-child(3){grid-column:1/-1;border-right:0;border-top:1px solid var(--line)}.book .btn{grid-column:1/-1;padding:14px}}
+/* sections */
+section.block{padding-block:72px}
+.eyebrow{font-size:11.5px;letter-spacing:3px;text-transform:uppercase;color:var(--ochre);font-weight:500}
+.block h2{font-size:clamp(32px,4.5vw,46px);line-height:1.12;margin:6px 0 14px;font-weight:500}
+.lede{color:var(--mute);max-width:620px;margin:0 0 34px;font-size:16px}
+.rooms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px}
+@media (max-width:900px){.rooms{grid-template-columns:1fr 1fr}} @media (max-width:600px){.rooms{grid-template-columns:1fr}}
+.room{display:flex;flex-direction:column;gap:10px;min-width:0}
+.room .ph{aspect-ratio:4/3;border-radius:2px;overflow:hidden;max-width:100%}
+.room h3{font-size:26px}
+.room .meta{font-size:13px;color:var(--mute)}
+.room .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:12px;border-top:1px solid var(--line)}
+.price{font-variant-numeric:tabular-nums} .price b{font-family:var(--display);font-size:24px;font-weight:600}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:center}
+@media (max-width:820px){.split{grid-template-columns:1fr;gap:26px}}
+.split .ph{aspect-ratio:5/4;border-radius:2px;overflow:hidden;max-width:100%}
+.alt{background:var(--soft)}
+.feat{display:grid;grid-template-columns:1fr 1fr;gap:12px 22px;list-style:none;padding:0;margin:20px 0 0;font-size:14.5px}
+.feat li{display:flex;gap:10px;align-items:flex-start}
+.feat svg{width:20px;height:20px;flex:none;color:var(--ochre);margin-top:2px}
+.dist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.dist li{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px}
+.dist li span:last-child{color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+footer{background:#1d1d1f;color:#d2d2d7;padding-block:44px 90px;font-size:13.5px}
+footer .in{display:grid;grid-template-columns:2fr 1fr 1fr;gap:28px}
+@media (max-width:720px){footer .in{grid-template-columns:1fr}}
+footer h3{color:#fff;font-size:24px;margin-bottom:6px}
+footer .small{font-size:12px;color:#8e8e93;margin-top:12px}
+/* fallback foto: tinte del posto finché non ci sono le immagini */
+.ph.f-hero{background:radial-gradient(120% 90% at 75% 20%,#8e9499 0%,#4c5156 45%,#232527 100%)}
+.ph.f-mare,.ph.f-giardino,.ph.f-faro,.ph.f-casa{background:linear-gradient(160deg,#f3f3f4,#d9dadd)}
+/* chat */
+.chat{position:fixed;z-index:40;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(90px + env(safe-area-inset-bottom,0px));
+  width:min(380px, calc(100vw - 32px));height:min(560px, calc(100vh - 120px));background:var(--paper);border:1px solid var(--line);border-radius:16px;
+  display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(10,30,45,.28);overflow:hidden}
+.chat[hidden],.teaser[hidden]{display:none}
+@media (max-width:520px){.chat{inset:0;width:auto;height:auto;border-radius:0;border:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}}
+.chat header{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--sea);color:var(--sea-ink);border-bottom:2px solid var(--ochre)}
+.avatar{width:34px;height:34px;border-radius:50%;background:transparent;border:1px solid var(--ochre);color:var(--ochre);display:grid;place-items:center;font:600 18px var(--display);flex:none}
+.chat header .n{font-weight:600;line-height:1.25}.chat header .s{font-size:12px;opacity:.85;line-height:1.3}
+.mode{margin-left:auto;font-size:11px;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.18);white-space:nowrap}
+.close{margin-left:6px;width:32px;height:32px;border-radius:8px;border:0;background:transparent;color:inherit;font-size:22px;line-height:1;cursor:pointer}
+.log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:86%;padding:9px 12px;border-radius:14px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14.5px}
+.msg.bot{background:var(--bubble-bot);border-bottom-left-radius:4px;align-self:flex-start}
+.msg.me{background:var(--bubble-me);color:var(--bubble-me-ink);border-bottom-right-radius:4px;align-self:flex-end}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 10px}
+.chips button{font:13px var(--body);border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:5px 11px;cursor:pointer}
+.chips button:hover{border-color:var(--ochre)}
+#form{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
+#form input{flex:1;min-width:0;font:15px var(--body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+#form button{font:500 12.5px var(--body);letter-spacing:1.2px;text-transform:uppercase;border:0;border-radius:2px;padding:0 16px;background:var(--sea);color:var(--sea-ink);cursor:pointer}
+#form button:disabled{opacity:.5;cursor:default}
+.launcher{position:fixed;z-index:39;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  width:62px;height:62px;border-radius:50%;border:1px solid var(--ochre);background:var(--sea);color:var(--ochre);cursor:pointer;display:grid;place-items:center;box-shadow:0 10px 26px rgba(10,30,45,.3)}
+.launcher svg{width:28px;height:28px}
+.teaser{position:fixed;z-index:39;right:calc(88px + env(safe-area-inset-right,0px));bottom:calc(28px + env(safe-area-inset-bottom,0px));
+  background:var(--paper);border-color:var(--line);color:var(--ink);border:1px solid var(--line);border-radius:12px 12px 4px 12px;padding:9px 12px;font-size:14px;box-shadow:0 8px 22px rgba(10,30,45,.15);cursor:pointer;max-width:min(240px, calc(100vw - 120px))}
+.teaser b{display:block}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--ochre);outline-offset:2px}
+/* pannello demo */
+.owner{background:var(--paper);border:1px dashed var(--ochre);border-radius:14px;padding:18px;margin-block:0 40px}
+.owner h2{font-size:24px;margin-bottom:4px}
+.owner .lead{color:var(--mute);font-size:13px;margin:0 0 10px}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:12px;color:var(--mute);text-align:left;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+.empty{color:var(--mute);font-size:14px;padding:10px 2px}
+.stats{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--mute);margin-bottom:8px}
+.stats b{color:var(--ink);font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:no-preference){.msg{animation:in .18s ease-out}@keyframes in{from{transform:translateY(4px);opacity:.4}}}
+</style>
+<style>html{-webkit-text-size-adjust:100%}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+<div class="demo-note gut">Sito dimostrativo: Casa Ondablu è una struttura <b>inventata</b>, con prezzi e disponibilità di esempio.</div>
+
+<nav class="nav gut"><div class="in">
+  <div class="logo">Casa Ondablu<small>B&amp;B · Camogli</small></div>
+  <div class="links"><a href="#camere">Camere</a><a href="#casa">La casa</a><a href="#dove">Dove siamo</a><a href="#contatti">Contatti</a></div>
+  <div class="lang"><b>IT</b> · EN · DE</div>
+  <button class="btn" type="button" id="nav-book">Prenota</button>
+</div></nav>
+
+<header class="hero">
+  <div class="ph f-hero"><img src="img/hero.jpg" alt="Le case colorate di Camogli sul mare" onerror="this.remove()"></div>
+  <div class="in gut">
+    <div class="kicker">Camogli · Riviera di Levante</div>
+    <h1>Il mare, dalla finestra</h1>
+    <p>Una dimora del Settecento sul porticciolo di Camogli. Tre camere, colazione servita in giardino, il mare a pochi passi.</p>
+    <form class="book" id="book" autocomplete="off">
+      <label for="b-in">Arrivo<input id="b-in" type="date" required></label>
+      <label for="b-out">Partenza<input id="b-out" type="date" required></label>
+      <label for="b-g">Ospiti<select id="b-g"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
+      <button class="btn" type="submit">Verifica disponibilità</button>
+    </form>
+  </div>
+</header>
+
+<main>
+<section class="block gut" id="camere"><div class="in">
+  <div class="eyebrow">Le camere</div>
+  <h2>Svegliarsi con il mare o con i limoni</h2>
+  <p class="lede">Tre stanze diverse, tutte con aria condizionata, Wi-Fi e bagno privato. La colazione è sempre inclusa.</p>
+  <div class="rooms" id="rooms"></div>
+</div></section>
+
+<section class="block gut alt" id="casa"><div class="in split">
+  <div class="ph f-casa"><img src="img/casa.jpg" alt="Colazione in giardino tra i limoni" onerror="this.remove()"></div>
+  <div>
+    <div class="eyebrow">La casa</div>
+    <h2>Una casa di pescatori, sistemata con calma</h2>
+    <p class="lede" style="margin-bottom:0">Al secondo piano di un palazzo del Settecento, con le persiane verdi e il giardino di limoni sul retro. La gestiamo noi, e la mattina prepariamo la colazione.</p>
+    <ul class="feat">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9a13 13 0 0 1 18 0M6 12.5a8.5 8.5 0 0 1 12 0M9.5 16a3.5 3.5 0 0 1 5 0"/><circle cx="12" cy="19" r="1"/></svg>Wi-Fi veloce in tutta la casa</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9"/></svg>Aria condizionata</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11h13a3 3 0 0 1 0 6h-1M4 11v3a5 5 0 0 0 5 5h3a5 5 0 0 0 5-5v-3M8 4v3M12 4v3"/></svg>Colazione con focaccia inclusa</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="8" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="9" cy="4.5" r="1.6"/><circle cx="15" cy="4.5" r="1.6"/><path d="M12 11c3 0 5 4 5 6s-2 3-5 2c-3 1-5 0-5-2s2-6 5-6z"/></svg>Animali piccoli benvenuti</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="9" width="16" height="11" rx="2"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/></svg>Deposito bagagli gratuito</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 17h14l-1-5H6zM7 12l1.5-4h7L17 12"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg>Garage convenzionato a 300 m</li>
+    </ul>
+  </div>
+</div></section>
+
+<section class="block gut" id="dove"><div class="in split">
+  <div>
+    <div class="eyebrow">Dove siamo</div>
+    <h2>Tutto a piedi, anche dalla stazione</h2>
+    <p class="lede">Si arriva comodi in treno sulla linea Genova–La Spezia. In auto: uscita A12 Recco, poi 15 minuti.</p>
+    <ul class="dist">
+      <li><span>Spiaggia di Camogli</span><span>4 min a piedi</span></li>
+      <li><span>Stazione Camogli–San Fruttuoso</span><span>6 min a piedi</span></li>
+      <li><span>Battello per San Fruttuoso e Portofino</span><span>5 min a piedi</span></li>
+      <li><span>Sentiero per Punta Chiappa</span><span>20 min a piedi</span></li>
+      <li><span>Genova, aeroporto Cristoforo Colombo</span><span>40 min in auto</span></li>
+    </ul>
+  </div>
+  <div class="ph f-hero" style="aspect-ratio:5/4;border-radius:2px"><img src="img/tramonto.jpg" alt="Il paese al tramonto visto dal mare" onerror="this.remove()"></div>
+</div></section>
+</main>
+
+<footer class="gut" id="contatti"><div class="in">
+  <div><h3>Casa Ondablu</h3>Bed &amp; Breakfast · Camogli (GE)<br>Indirizzo, telefono e codice CIN: dati di esempio per la demo.
+    <div class="small">Immagini generate con IA. Struttura e contenuti inventati a scopo dimostrativo.</div></div>
+  <div><b style="color:#fff">Orari</b><br>Check-in 15:00–20:00<br>Check-out entro 10:30<br>Chiuso dal 7 gennaio a fine febbraio</div>
+  <div><b style="color:#fff">Scrivici</b><br>Per disponibilità e informazioni sul soggiorno.<br><button class="btn ghost" type="button" id="foot-chat" style="margin-top:10px;color:#d8c39a;border-color:#a8834a">Apri la chat</button></div>
+</div></footer>
+
+<div class="gut" style="padding-top:28px"><div class="in">
+<section class="owner">
+  <p class="lead" style="margin:0 0 6px"><b>Solo per la demo:</b> questo riquadro non sta sul sito degli ospiti.</p>
+  <h2>Cosa vede il titolare</h2>
+  <p class="lead">Le richieste che l'assistente non può chiudere da solo (prenotazioni, domande particolari) arrivano qui con nome e contatto. In un servizio vero arriverebbero via email o WhatsApp.</p>
+  <div class="stats"><span>Domande gestite: <b id="st-q">0</b></span><span>Richieste passate al titolare: <b id="st-r">0</b></span></div>
+  <div id="inbox"><div class="empty">Ancora nessuna richiesta. Prova a chiedere all'assistente di prenotare.</div></div>
+</section>
+</div></div>
+
+  <button class="launcher" id="launcher" type="button" aria-label="Apri la chat con l'assistente" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
+  </button>
+  <div class="teaser" id="teaser" role="button" tabindex="0"><b>Posso esserLe utile?</b>Disponibilità, camere e informazioni.</div>
+
+  <section class="chat" id="chat" aria-label="Assistente virtuale" hidden>
+    <header>
+      <div class="avatar">O</div>
+      <div style="min-width:0"><div class="n">Casa Ondablu</div><div class="s">Assistente virtuale</div></div>
+      <span class="mode" id="mode">avvio…</span>
+      <button class="close" id="close" type="button" aria-label="Chiudi la chat">×</button>
+    </header>
+    <div class="log" id="log" aria-live="polite"></div>
+    <div class="chips" id="chips"></div>
+    <form id="form" autocomplete="off">
+      <input id="q" type="text" placeholder="Scriva la Sua domanda…" aria-label="Messaggio">
+      <button id="send" type="submit">Invia</button>
+    </form>
+  </section>
+
+
+<script>
+// ---------- dati della struttura (inventati) ----------
+const TODAY = new Date();
+const ROOMS = [
+  {id:"mare", name:"Camera Mare", guests:2, low:140, high:190, desc:"Matrimoniale, balcone vista mare, 22 m²"},
+  {id:"giardino", name:"Camera Giardino", guests:2, low:105, high:150, desc:"Matrimoniale o due singoli, sul giardino di limoni"},
+  {id:"faro", name:"Suite Faro", guests:4, low:180, high:260, desc:"Due ambienti, terrazzino, fino a 4 persone"}
+];
+const iso = d => d.toISOString().slice(0,10);
+const addDays = (d,n) => { const x = new Date(d); x.setUTCDate(x.getUTCDate()+n); return x; };
+const utc = s => { const [y,m,dd] = s.split("-").map(Number); return new Date(Date.UTC(y,m-1,dd)); };
+function season(d){ const m = d.getUTCMonth()+1, day = d.getUTCDate();
+  if ((m===1 && day>=7) || m===2) return "closed";
+  return (m>=6 && m<=9) ? "high" : "low"; }
+function booked(roomId, d){ // occupazione finta ma stabile: dipende solo da camera e data
+  if (season(d)==="closed") return true;
+  let h = 0; const k = roomId + iso(d); for (const c of k) h = (h*31 + c.charCodeAt(0)) >>> 0;
+  const busy = season(d)==="high" ? 0.55 : 0.25; const block = Math.floor(d.getTime()/86400000/3); // blocchi di 3 notti
+  let h2 = 0; const k2 = roomId + block; for (const c of k2) h2 = (h2*33 + c.charCodeAt(0)) >>> 0;
+  return (h2 % 1000)/1000 < busy;
+}
+function quote(checkin, checkout, guests){
+  const a = utc(checkin), b = utc(checkout);
+  if (isNaN(a) || isNaN(b)) throw new Error("Date non valide: usa il formato AAAA-MM-GG");
+  const nights = Math.round((b-a)/86400000);
+  if (nights < 1) throw new Error("La data di partenza deve essere dopo quella di arrivo");
+  if (nights > 21) throw new Error("Per soggiorni oltre 21 notti serve il titolare");
+  if (a < utc(iso(TODAY))) throw new Error("La data di arrivo è nel passato");
+  const out = [];
+  for (const r of ROOMS){
+    if (guests > r.guests){ out.push({room:r.name, available:false, reason:`max ${r.guests} persone`}); continue; }
+    let total = 0, ok = true, high = false, closed = false;
+    for (let i=0;i<nights;i++){ const d = addDays(a,i); const s = season(d);
+      if (s==="closed") closed = true; if (s==="high") high = true;
+      if (booked(r.id,d)) ok = false; total += s==="high" ? r.high : r.low; }
+    if (closed){ out.push({room:r.name, available:false, reason:"struttura chiusa dal 7 gennaio a fine febbraio"}); continue; }
+    if (high && nights < 2){ out.push({room:r.name, available:false, reason:"in alta stagione minimo 2 notti"}); continue; }
+    out.push({room:r.name, available:ok, nights, total_eur: ok ? total : undefined,
+      city_tax_eur: ok ? 2*Math.min(guests,4)*Math.min(nights,7) : undefined, reason: ok ? undefined : "già occupata in alcune notti"});
+  }
+  return {checkin, checkout, guests, nights, breakfast:"inclusa", rooms: out};
+}
+const FACTS = `STRUTTURA: Casa Ondablu, B&B a Camogli (Liguria). 3 camere:
+- Camera Mare: 2 persone, balcone vista mare, 22 m². Bassa stagione 140 €/notte, alta (giugno-settembre) 190 €/notte.
+- Camera Giardino: 2 persone (matrimoniale o due singoli), vista giardino di limoni. 105 € / 150 €.
+- Suite Faro: fino a 4 persone, due ambienti, terrazzino. 180 € / 260 €.
+Colazione inclusa (focaccia, torte fatte in casa, frutta; opzioni senza glutine su richiesta).
+Alta stagione: 1 giugno - 30 settembre, minimo 2 notti. Chiuso dal 7 gennaio a fine febbraio.
+Check-in 15:00-20:00 (arrivo più tardi da concordare con il titolare). Check-out entro 10:30, deposito bagagli gratuito.
+Tassa di soggiorno: 2 € a persona a notte, massimo 7 notti, bambini sotto 12 anni esenti.
+Parcheggio: nessun parcheggio privato; garage convenzionato a 300 m, 15 € al giorno.
+Stazione di Camogli a 6 minuti a piedi; spiaggia a 4 minuti; battello per San Fruttuoso e Portofino dal porticciolo (aprile-ottobre, orari variabili).
+Wi-Fi gratuito, aria condizionata in tutte le camere, niente ascensore (2 piani di scale).
+Animali piccoli ammessi, 10 € a notte. Culla gratuita su richiesta (solo Suite Faro).
+Cancellazione gratuita fino a 7 giorni prima; dopo si paga la prima notte.
+Pagamento: in struttura con carta o contanti. L'assistente NON prende pagamenti e NON conferma prenotazioni: le raccoglie per il titolare, che risponde entro poche ore.`;
+
+function rules(){
+  return `Sei l'assistente virtuale di Casa Ondablu, un B&B a Camogli. Oggi è ${iso(TODAY)}.
+Rispondi nella lingua dell'ospite (italiano, inglese, tedesco, francese...). Tono elegante e cortese, da struttura di charme: in italiano dai del Lei. Frasi brevi e precise, massimo 4-5 frasi. Testo semplice: niente markdown, niente asterischi, niente elenchi lunghi.
+Usa SOLO le informazioni qui sotto e i risultati degli strumenti. Se non sai una cosa, dillo e proponi di passare la domanda al titolare.
+Per disponibilità e prezzi di date precise usa SEMPRE lo strumento check_availability (date in formato AAAA-MM-GG; se l'ospite non dice l'anno, scegli la prossima occorrenza futura). Non calcolare i prezzi a mente. Indica il totale e ricorda colazione inclusa e tassa di soggiorno.
+Se l'ospite vuole prenotare o ha una richiesta che non puoi chiudere: chiedi nome e un contatto (email o telefono), poi chiama save_request e conferma che il titolare risponderà entro poche ore. Non dire mai che la prenotazione è confermata.
+${FACTS}`;
+}
+
+// ---------- interfaccia ----------
+const $ = s => document.querySelector(s);
+const log = $("#log"), form = $("#form"), input = $("#q"), send = $("#send"), modeEl = $("#mode");
+const requests = []; let handled = 0;
+$("#rooms").innerHTML = ROOMS.map(r => `<article class="room"><div class="ph f-${r.id}"><img src="img/${r.id}.jpg" alt="${r.name}" onerror="this.remove()"></div>
+  <h3>${r.name}</h3><div>${r.desc}</div><div class="meta">Fino a ${r.guests} persone · colazione inclusa</div>
+  <div class="row"><span class="price">da <b>${r.low} €</b> / notte</span><button class="btn ghost" type="button" data-room="${r.name}">Chiedi</button></div></article>`).join("");
+
+function bubble(cls, text){ const d = document.createElement("div"); d.className = "msg " + cls; d.textContent = text; log.appendChild(d); log.scrollTop = log.scrollHeight; return d; }
+function renderInbox(){
+  $("#st-q").textContent = handled; $("#st-r").textContent = requests.length;
+  if (!requests.length) return;
+  const tb = document.createElement("table");
+  tb.innerHTML = "<tr><th>Ora</th><th>Nome</th><th>Contatto</th><th>Richiesta</th></tr>";
+  for (const r of requests.slice().reverse()){
+    const tr = document.createElement("tr");
+    for (const v of [r.time, r.name, r.contact, r.message]){ const td = document.createElement("td"); td.textContent = v; tr.appendChild(td); }
+    tb.appendChild(tr);
+  }
+  const w = document.createElement("div"); w.className = "tablewrap"; w.appendChild(tb);
+  const box = $("#inbox"); box.replaceChildren(w);
+}
+function saveRequest(o){
+  const r = {time: new Date().toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"}),
+    name: String(o.name||"").slice(0,80) || "—", contact: String(o.contact||"").slice(0,120) || "—",
+    message: String(o.message||"").slice(0,400) || "—"};
+  requests.push(r); renderInbox(); return "Richiesta salvata e inviata al titolare.";
+}
+
+const CHIPS = ["Disponibilità dal 14 al 16 agosto per 2", "È previsto un parcheggio?", "Do you accept dogs?", "Come si arriva dalla stazione?", "Vorrei prenotare la Suite Faro"];
+$("#chips").innerHTML = ""; for (const c of CHIPS){ const b = document.createElement("button"); b.type = "button"; b.textContent = c; b.onclick = () => ask(c); $("#chips").appendChild(b); }
+
+bubble("bot", "Buongiorno e benvenuto a Casa Ondablu. Posso indicarLe disponibilità e tariffe, i servizi della casa e come raggiungerci, oppure inoltrare la Sua richiesta ai titolari. Come posso esserLe utile?");
+
+// ---------- modalità di risposta ----------
+const turns = []; let busy = false, offline = false;
+function setMode(t){ modeEl.textContent = t; }
+setMode("avvio…");
+fetch("/api/chat", {cache:"no-store"}).then(r => r.json()).then(j => { offline = !j.ready; setMode(j.ready ? "IA attiva" : "modalità base"); })
+  .catch(() => { offline = true; setMode("modalità base"); });
+
+// risposta di riserva senza IA: parole chiave + preventivo con date esplicite AAAA-MM-GG
+function offlineAnswer(q){
+  const s = q.toLowerCase();
+  const dates = q.match(/\d{4}-\d{2}-\d{2}/g);
+  if (dates && dates.length >= 2){
+    try { const r = quote(dates[0], dates[1], 2);
+      return r.rooms.map(x => x.available ? `${x.room}: libera, ${x.total_eur} € per ${x.nights} notti (colazione inclusa)` : `${x.room}: non disponibile (${x.reason})`).join("\n"); }
+    catch (e){ return e.message; } }
+  if (/parchegg|park|auto|car/.test(s)) return "Non abbiamo un parcheggio privato: c'è un garage convenzionato a 300 m, 15 € al giorno.";
+  if (/cane|gatto|animal|dog|pet/.test(s)) return "Certamente: gli animali di piccola taglia sono benvenuti, con un supplemento di 10 € a notte.";
+  if (/stazion|station|treno|train|arriv/.test(s)) return "Dalla stazione di Camogli sono 6 minuti a piedi, in discesa verso il mare.";
+  if (/check|orari|arrivo/.test(s)) return "Il check-in è dalle 15:00 alle 20:00, il check-out entro le 10:30. Custodiamo volentieri i bagagli.";
+  if (/colazion|breakfast/.test(s)) return "La colazione è inclusa: focaccia, torte fatte in casa e frutta.";
+  if (/cancell/.test(s)) return "Cancellazione gratuita fino a 7 giorni prima dell'arrivo.";
+  if (/prezz|cost|price|disponib|camer|room|preno|book/.test(s)) return "Mi indichi le date (per esempio 2027-07-10 e 2027-07-13) e Le comunico disponibilità e tariffe. Per prenotare, lasci nome e recapito: i titolari La ricontatteranno.";
+  return "In questa modalità rispondo alle domande più comuni (parcheggio, animali, orari, tariffe con date). Per altre richieste lasci nome e recapito: i titolari La ricontatteranno.";
+}
+
+async function ask(text, extra = ""){
+  text = text.trim(); if (!text || busy) return;
+  const full = extra ? text + " " + extra : text;
+  busy = true; send.disabled = true; input.value = "";
+  bubble("me", text); handled++; renderInbox();
+  if (offline){
+    const a = offlineAnswer(full);
+    setTimeout(() => { bubble("bot", a); busy = false; send.disabled = false; }, 350);
+    return;
+  }
+  turns.push({role:"user", content:full});
+  const b = bubble("bot", "…");
+  try {
+    const r = await fetch("/api/chat", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({messages: turns.slice(-14)})});
+    const j = await r.json().catch(() => ({}));
+    if (r.ok && j.reply){
+      b.textContent = j.reply; turns.push({role:"assistant", content:j.reply});
+      (j.requests || []).forEach(saveRequest);
+    } else {
+      turns.pop();
+      if (r.status === 429) b.textContent = "Molte richieste in poco tempo: La prego di riprovare tra un minuto.";
+      else { b.textContent = offlineAnswer(full); if (r.status === 503){ offline = true; setMode("modalità base"); } }
+    }
+  } catch (e){
+    turns.pop(); b.textContent = "Connessione interrotta, La prego di riprovare.";
+  } finally { busy = false; send.disabled = false; log.scrollTop = log.scrollHeight; }
+}
+form.addEventListener("submit", ev => { ev.preventDefault(); ask(input.value); });
+
+// ---------- apri / chiudi la chat ----------
+const chat = $("#chat"), launcher = $("#launcher"), teaser = $("#teaser");
+function openChat(){ chat.hidden = false; teaser.hidden = true; launcher.setAttribute("aria-expanded","true"); log.scrollTop = log.scrollHeight; if (window.innerWidth > 520) input.focus(); }
+function closeChat(){ chat.hidden = true; launcher.setAttribute("aria-expanded","false"); launcher.focus(); }
+launcher.addEventListener("click", () => chat.hidden ? openChat() : closeChat());
+teaser.addEventListener("click", openChat);
+teaser.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openChat(); } });
+$("#close").addEventListener("click", closeChat);
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !chat.hidden) closeChat(); });
+
+// ---------- il sito parla con l'assistente ----------
+const fmt = s => { const [y,m,d] = s.split("-"); return `${+d}/${+m}/${y}`; };
+const bIn = $("#b-in"), bOut = $("#b-out");
+bIn.min = iso(TODAY); bOut.min = iso(addDays(TODAY,1));
+bIn.addEventListener("change", () => { if (bIn.value){ const n = iso(addDays(utc(bIn.value),1)); bOut.min = n; if (!bOut.value || bOut.value <= bIn.value) bOut.value = iso(addDays(utc(bIn.value),2)); } });
+$("#book").addEventListener("submit", ev => { ev.preventDefault();
+  if (!bIn.value || !bOut.value) return;
+  openChat(); ask(`Avete disponibilità dal ${fmt(bIn.value)} al ${fmt(bOut.value)} per ${$("#b-g").value} persone?`, `(date: ${bIn.value} - ${bOut.value})`); });
+$("#nav-book").addEventListener("click", () => { openChat(); if (!turns.length && !handled) ask("Vorrei prenotare: come funziona?"); });
+$("#foot-chat").addEventListener("click", openChat);
+$("#rooms").addEventListener("click", e => { const b = e.target.closest("[data-room]"); if (!b) return; openChat(); ask(`Vorrei informazioni sulla ${b.dataset.room}: è disponibile nelle prossime settimane?`); });
+</script>
+
+</body>
+</html>
