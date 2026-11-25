@@ -342,19 +342,21 @@ fetch("/api/chat", {cache:"no-store"}).then(r => r.json()).then(j => { offline =
 // risposta di riserva senza IA: parole chiave + preventivo con date esplicite AAAA-MM-GG
 function offlineAnswer(q){
   const s = q.toLowerCase();
+  const en = /\b(the|you|do|does|is|are|can|have|what|how|where|when|we|i|my|please|hello|hi)\b/.test(s) && !/\b(il|la|che|per|avete|sono|vorrei|come|dove|quando)\b/.test(s);
+  const T = (it, eng) => en ? eng : it;
   const dates = q.match(/\d{4}-\d{2}-\d{2}/g);
   if (dates && dates.length >= 2){
     try { const r = quote(dates[0], dates[1], 2);
-      return r.rooms.map(x => x.available ? `${x.room}: libera, ${x.total_eur} € per ${x.nights} notti (colazione inclusa)` : `${x.room}: non disponibile (${x.reason})`).join("\n"); }
+      return r.rooms.map(x => x.available ? T(`${x.room}: libera, ${x.total_eur} € per ${x.nights} notti (colazione inclusa)`, `${x.room}: available, ${x.total_eur} € for ${x.nights} nights (breakfast included)`) : T(`${x.room}: non disponibile (${x.reason})`, `${x.room}: not available`)).join("\n"); }
     catch (e){ return e.message; } }
-  if (/parchegg|park|auto|car/.test(s)) return "Non abbiamo un parcheggio privato: c'è un garage convenzionato a 300 m, 15 € al giorno.";
-  if (/cane|gatto|animal|dog|pet/.test(s)) return "Certamente: gli animali di piccola taglia sono benvenuti, con un supplemento di 10 € a notte.";
-  if (/stazion|station|treno|train|arriv/.test(s)) return "Dalla stazione di Camogli sono 6 minuti a piedi, in discesa verso il mare.";
-  if (/check|orari|arrivo/.test(s)) return "Il check-in è dalle 15:00 alle 20:00, il check-out entro le 10:30. Custodiamo volentieri i bagagli.";
-  if (/colazion|breakfast/.test(s)) return "La colazione è inclusa: focaccia, torte fatte in casa e frutta.";
-  if (/cancell/.test(s)) return "Cancellazione gratuita fino a 7 giorni prima dell'arrivo.";
-  if (/prezz|cost|price|disponib|camer|room|preno|book/.test(s)) return "Mi indichi le date (per esempio 2027-07-10 e 2027-07-13) e Le comunico disponibilità e tariffe. Per prenotare, lasci nome e recapito: i titolari La ricontatteranno.";
-  return "In questa modalità rispondo alle domande più comuni (parcheggio, animali, orari, tariffe con date). Per altre richieste lasci nome e recapito: i titolari La ricontatteranno.";
+  if (/parchegg|park|auto|car/.test(s)) return T("Non abbiamo un parcheggio privato: c'è un garage convenzionato a 300 m, 15 € al giorno.", "We have no private parking, but there is a partner garage 300 m away, 15 € per day.");
+  if (/\bcan[ei]\b|gatt|animal|dog|pet\b|cat\b/.test(s)) return T("Certamente: gli animali di piccola taglia sono benvenuti, con un supplemento di 10 € a notte.", "Of course: small pets are welcome, with a supplement of 10 € per night.");
+  if (/stazion|station|treno|train|arriv/.test(s)) return T("Dalla stazione di Camogli sono 6 minuti a piedi, in discesa verso il mare.", "Camogli station is a 6-minute walk, downhill towards the sea.");
+  if (/check|orari|arrivo/.test(s)) return T("Il check-in è dalle 15:00 alle 20:00, il check-out entro le 10:30. Custodiamo volentieri i bagagli.", "Check-in is from 3 pm to 8 pm, check-out by 10:30 am. We are happy to keep your luggage.");
+  if (/colazion|breakfast/.test(s)) return T("La colazione è inclusa: focaccia, torte fatte in casa e frutta.", "Breakfast is included: focaccia, homemade cakes and fruit.");
+  if (/cancell/.test(s)) return T("Cancellazione gratuita fino a 7 giorni prima dell'arrivo.", "Free cancellation up to 7 days before arrival.");
+  if (/prezz|cost|price|disponib|availab|camer|room|preno|book/.test(s)) return T("Mi indichi le date (per esempio 2027-07-10 e 2027-07-13) e Le comunico disponibilità e tariffe. Per prenotare, lasci nome e recapito: i titolari La ricontatteranno.", "Please tell me your dates (for example 2027-07-10 and 2027-07-13) and I will check availability and rates. To book, leave your name and contact details and the owners will get back to you.");
+  return T("In questa modalità rispondo alle domande più comuni (parcheggio, animali, orari, tariffe con date). Per altre richieste lasci nome e recapito: i titolari La ricontatteranno.", "In this mode I can answer the most common questions (parking, pets, times, rates for given dates). For anything else, leave your name and contact details and the owners will get back to you.");
 }
 
 async function ask(text, extra = ""){
