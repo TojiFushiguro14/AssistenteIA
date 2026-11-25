@@ -90,6 +90,20 @@ function limited(ip) {
   return w.length > 12;
 }
 
+function guessLang(t) {
+  const w = " " + t.toLowerCase().replace(/[^a-zà-ÿß' ]+/g, " ") + " ";
+  const score = words => words.reduce((n, x) => n + (w.includes(" " + x + " ") ? 1 : 0), 0);
+  const s = {
+    italiano: score(["il","la","che","per","avete","sono","vorrei","come","dove","quando","è","ci","un","una","di","del","della","posso","grazie","buongiorno","cani","cane","camera"]),
+    inglese: score(["the","you","do","does","is","are","can","have","what","how","where","when","we","i","my","please","hello","hi","dogs","dog","room","any","there","a","for"]),
+    tedesco: score(["der","die","das","und","ist","sie","haben","wir","ich","ein","eine","gibt","es","hund","zimmer","bitte","hallo","wie"]),
+    francese: score(["le","les","des","est","vous","avez","nous","je","une","pour","chien","chambre","bonjour","combien","acceptez"]),
+    spagnolo: score(["el","los","las","es","usted","tienen","hay","perro","habitación","hola","cuánto","para","una","por"]),
+  };
+  const best = Object.entries(s).sort((a, b) => b[1] - a[1])[0];
+  return best[1] > 0 ? best[0] : "la stessa lingua dell'ospite";
+}
+
 async function callGemini(model, key, contents) {
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: "POST",
@@ -117,6 +131,11 @@ module.exports = async (req, res) => {
     .map(m => ({ role: m.role === "user" ? "user" : "model", parts: [{ text: m.content.slice(0, MAX_CHARS) }] }));
   while (contents.length && contents[0].role !== "user") contents.shift();
   if (!contents.length || contents[contents.length - 1].role !== "user") return res.status(400).json({ error: "bad_request" });
+
+  // lingua dell'ultimo messaggio: la indichiamo esplicitamente al modello
+  const last = contents[contents.length - 1].parts[0];
+  const lang = guessLang(last.text);
+  last.text += `\n\n[Nota per l'assistente: rispondi in ${lang}, la lingua di questo messaggio.]`;
 
   const requests = [];
   let models = MODELS.slice();
